@@ -126,3 +126,92 @@ Make sure replace BOOTCAMP_DEV with your schema
 Make sure put LOCAL before INFILE in LOAD DATA INFILE, the correct one is: LOAD DATA LOCAL INFILE. If you forget LOCAL, you would get errors
 
 Make sure replace the data file full path with yours at your laptop
+
+### MySQL Scripts
+Following SQL scripts are used in Tech Preview bootcamp to create tables, join tables and load CSV files into database tables
+
+#### Create CRSP Header Table 
+```sql
+USE MSBA_DB1;
+CREATE TABLE crsp_header(
+   permno INT NOT NULL UNIQUE,
+   permco INT NOT NULL,
+   ticker VARCHAR(5),
+   comnam VARCHAR(32) NOT NULL,
+   naics INT,
+   prim_exch VARCHAR(1),
+   cusip VARCHAR(8),
+   siccd INT,
+   begdat DATE,
+   enddat DATE,
+      PRIMARY KEY ( permno )
+);
+```
+
+**Note** replace ```MSBA_DB1``` with the schema that you have access, add your initial in the table name,
+for example, replace ```crsp_header``` with ```crsp_header_ag```
+
+#### Create CRSP Daily Data Table
+```sql
+USE MSBA_DB1;
+CREATE TABLE crsp_daily_data(
+   permno INT NOT NULL,
+   caldt DATE,
+   price DOUBLE,
+   volume INT,
+   daily_return DOUBLE,
+   shrsout INT,
+      PRIMARY KEY ( permno, caldt )
+);
+```
+
+**Note** replace ```MSBA_DB1``` with the schema that you have access, add your initial in the table name,
+for example, replace ```crsp_daily_data``` with ```crsp_daily_data_ag```
+
+#### Simple Join CRSP Header and Daily Tables
+```sql
+USE MSBA_DB1;
+SELECT comnam, crsp_header.permno, sum(daily_return), exp(sum(log(daily_return+1)))-1 as cum_daily_return, count(daily_return)
+ from crsp_header
+  inner join crsp_daily_data
+     on crsp_header.permno=crsp_daily_data.permno
+     and caldt between '2022-01-01' and '2022-12-31'
+ group by crsp_header.permno;
+```
+
+**Note** replace ```MSBA_DB1``` with the schema that you have access, add your initial in the table name,
+for example, replace ```crsp_header``` with ```crsp_header_ag```, replace ```crsp_daily_data``` with ```crsp_daily_data_ag```
+
+#### Load CRSP Header Table from CSV File
+```sql
+USE MSBA_DB1;
+LOAD DATA LOCAL INFILE 'C:/Users/rharr08/Downloads/fpdqyfoyhasok69f.csv' 
+    INTO TABLE crsp_header
+    FIELDS TERMINATED BY ',' 
+    LINES TERMINATED BY '\n'
+    IGNORE 1 ROWS;
+```
+
+**Note** replace ```MSBA_DB1``` with the schema that you have access, add your initial in the table name,
+for example, replace ```crsp_header``` with ```crsp_header_ag```
+
+#### Load CRSP Daily Data Table from CSV File
+```sql
+USE MSBA_DB1;
+LOAD DATA LOCAL INFILE 'C:/users/rharr08/downloads/socrbvf3sdlcbqcs.csv' 
+    INTO TABLE `crsp_daily_data`
+    FIELDS TERMINATED BY ',' 
+    LINES TERMINATED BY '\n'
+    IGNORE 1 ROWS;
+```
+
+**Note** replace ```MSBA_DB1``` with the schema that you have access, add your initial in the table name,
+for example, replace ```crsp_daily_data``` with ```crsp_daily_data_ag```
+
+#### Troubleshooting
+- MySQL Case sensitivity - Some are case-sensitive and some are not
+- Access error when loading csv file into table
+  - make sure ```OPT_LOCAL_INFILE=1``` is set in Workbench, [see the docs](how_to_load_csv_file_into_mysql_table.pdf)
+  - make sure csv file full path is correct
+  - On Windows, replace window path seperator \  with / in the csv file path, for example, 
+    replace ```C:\users\rharr08\downloads\socrbvf3sdlcbqcs.csv``` with ```C:/users/rharr08/downloads/socrbvf3sdlcbqcs.csv```
