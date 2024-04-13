@@ -55,3 +55,74 @@ mysql> desc crsp_daily_data;
 Run the query
 
 mysql> select count(*) from crsp_daily_data;
+
+Load CSV File Data into MySQL Table
+Enable LOAD DATA LOCAL INFILE in MySQL Workbench
+Launch MySQL Workbench.
+
+Click Database on the top menu.
+
+Select Manage Connections…, a Manage Server Connections popup opens.
+
+Select the connection at the left you want to load data, for example, msba2024-serverless-mysql-production
+
+wb20
+
+Click Advanced button, add OPT_LOCAL_INFILE=1 in Others section
+
+wb21
+
+Click Test Connection button.
+
+Click OK if it is successful, then Close
+
+SET Environment Varilable: local_infile
+If your MySQL connection is localhost or 127.0. 0.1 , run following command in the Workbench SQL editor:
+
+SET GLOBAL local_infile=1;
+If your connection is remote MySQL on AWS, this step can be skipped.
+
+Load CSV File Data into MySQL Table Using Workbench
+Create a table, for example, create a table crsp_daily_data in BOOTCAMP_DEV schema , run following SQL statements in Workbench SQL Editor, replace BOOTCAMP_DEV with your schema:
+
+  use BOOTCAMP_DEV;
+  CREATE TABLE crsp_daily_data (
+  premno int NOT NULL,
+  caldt date NOT NULL,
+  price double,
+  volume int,
+  daily_return double,
+  shrsout int
+  );
+wb22
+
+Load CSV file, for example, load crsp_daily_data.csv data into table crsp_daily_data, run following SQL statements in Workbench SQL Editor, replace BOOTCAMP_DEV with your schema:
+
+  use BOOTCAMP_DEV;
+  LOAD DATA LOCAL INFILE 'C:/Users/PGU6/Downloads/data/crsp_daily_data.csv'
+    INTO TABLE `crsp_daily_data`
+    FIELDS TERMINATED BY ','
+    ENCLOSED BY '"'
+    LINES TERMINATED BY '\n'
+    IGNORE 1 ROWS;
+You can also combine schema with table, replace BOOTCAMP_DEV with your schema:
+
+  LOAD DATA LOCAL INFILE 'C:/Users/PGU6/Downloads/data/crsp_daily_data.csv'
+    INTO TABLE `BOOTCAMP_DEV.crsp_daily_data`
+    FIELDS TERMINATED BY ','
+    ENCLOSED BY '"'
+    LINES TERMINATED BY '\n'
+    IGNORE 1 ROWS;
+The path of csv file can be written as:
+
+  LOAD DATA LOCAL INFILE 'C:\\Users\\PGU6\\Downloads\\data\\crsp_daily_data.csv'
+    INTO TABLE `BOOTCAMP_DEV.crsp_daily_data`
+    FIELDS TERMINATED BY ','
+    ENCLOSED BY '"'
+    LINES TERMINATED BY '\n'
+    IGNORE 1 ROWS;
+Make sure replace BOOTCAMP_DEV with your schema
+
+Make sure put LOCAL before INFILE in LOAD DATA INFILE, the correct one is: LOAD DATA LOCAL INFILE. If you forget LOCAL, you would get errors
+
+Make sure replace the data file full path with yours at your laptop
