@@ -215,3 +215,89 @@ for example, replace ```crsp_daily_data``` with ```crsp_daily_data_ag```
   - make sure csv file full path is correct
   - On Windows, replace window path seperator \  with / in the csv file path, for example, 
     replace ```C:\users\rharr08\downloads\socrbvf3sdlcbqcs.csv``` with ```C:/users/rharr08/downloads/socrbvf3sdlcbqcs.csv```
+
+## MySQL Troubleshooting
+
+### Load Data into a Table Access Denied
+**Problem**
+
+When loading data into a table, you might get Error:
+```sql
+Error Code: 1290. The MySQL server is running with the --secure-file-priv option so it cannot execute this statement.
+so it cannot execute this statement.
+```
+
+When you have this error, first, you need to check if you have permission to access the schema and table.
+If you do, execute the following line together with **your LOAD DATA LOCAL INFILE ...** statements
+```shell
+use <my-scheme>;
+```
+
+where **<my-scheme>** is the schema you wish to load data into.
+
+for example:
+```shell
+use STUDENT_AAG332;
+```
+where **STUDENT_AAG332** is the schema you want to load data into.
+
+If you still get errors, try following workaround.
+
+**Workaround**
+
+1. In the Workbench, add following line  to your instance connection's ```Others``` box under ```Advanced``` settings, see [How to Load csv file into a table using MySQL Workbench](how_to_load_csv_file_into_mysql_table.pdf)
+   ```sql
+   OPT_LOCAL_INFILE=1
+   ```
+
+   ![Configure](../image/mysqloptconfig.PNG)
+
+
+2. Quit Workbench if ```Test connection``` is successfully, then re-launch Workbench.
+3. If your MySQL connection is **localhost** or **127.0. 0.1** , run following command in the Workbench SQL editor:
+   ```sql
+   SET GLOBAL local_infile=1;
+   ``` 
+4. In the same SQL Editor, load data into table:
+   - **Sample 1, fields seperated by tab in csv file**
+   ```sql
+    LOAD DATA LOCAL INFILE 'C:\\Users\\PGU6\\Documents\\GBS\\TechBootCamp\\MSBA2024\\etsy_shops_data.tsv'
+    INTO TABLE MY_SCHEMA.shops
+    FIELDS TERMINATED BY '\t'
+    ENCLOSED  BY '"';
+   ```
+   - **Sample 2, fields seperated by comma in csv file**
+   ```sql
+   LOAD DATA LOCAL INFILE  'c:/tmp/discounts.csv'
+   INTO TABLE MY_SCHEMA.discounts
+   FIELDS TERMINATED BY ','
+   ENCLOSED BY '"'
+   LINES TERMINATED BY '\n'
+   IGNORE 1 ROWS;
+   ```
+
+- Make sure replace **MY_SCHEMA** with your schema
+- Make sure put **LOCAL** before **INFILE** in **LOAD DATA INFILE**, the correct one is: **LOAD DATA LOCAL INFILE**. If you forget **LOCAL**, you would get errors
+- Make sure replace the data file full path with yours at your laptop
+
+### Query Timeout Lost connection to MySQL server
+**Problem**
+```sql
+Error Code: 2013. Lost connection to MySQL server during query
+```
+
+**Client-Side Solution**
+
+You can increase your MySQL client's timeout values, for instance 1 hour, in MySQL Workbench by editing 
+the SQL Editor preferences:
+
+1. Select ```Edit``` -> ```Preferences``` -> ```SQL Editor```
+2. Look for the MySQL Session section
+3. In ```DBMS connection read timeout interval(in seconds)```, change the value to ```3600``` 
+4. In ```DBMS connection timeout interval(in seconds)``` field, change value to ```120```.
+<br><br>
+   ![Configure](../image/wb30.PNG) <br>
+
+5. Click ```OK```
+6. Quit or close Workbench
+7. Re launch Workbench
